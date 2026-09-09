@@ -4,12 +4,9 @@ from pathlib import Path
 from typing import Dict
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import DeepLake
 
-# Evita que Transformers intente usar TensorFlow si no lo necesitas
-os.environ["USE_TF"] = "0"
-os.environ["TRANSFORMERS_NO_TF"] = "1"
+from embeddings_provider import build_embeddings
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -38,9 +35,6 @@ def build_deeplake_db(cfg: Dict) -> None:
     overwrite = bool(dl_cfg.get("overwrite", False))
 
     emb_cfg = cfg["embedding"]
-    model_name = emb_cfg["model_name"]
-    device = emb_cfg.get("device", "cpu")
-    normalize_embeddings = bool(emb_cfg.get("normalize_embeddings", True))
 
     split_cfg = cfg["splitter"]
     chunk_size = int(split_cfg["chunk_size"])
@@ -61,12 +55,8 @@ def build_deeplake_db(cfg: Dict) -> None:
     split_docs = splitter.split_documents(docs)
     print(f"Total de fragmentos generados: {len(split_docs)}")
 
-    print(f"Cargando modelo de embeddings: {model_name} (device={device})")
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs={"device": device},
-        encode_kwargs={"normalize_embeddings": normalize_embeddings}
-    )
+    print(f"Usando modelo de embeddings: {emb_cfg['model_name']} (via {emb_cfg['api_base']})")
+    embeddings = build_embeddings(emb_cfg["model_name"], emb_cfg["api_base"])
 
     print(f"Creando base Deep Lake en: {dataset_path} (overwrite={overwrite})")
     DeepLake.from_documents(

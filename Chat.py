@@ -22,15 +22,15 @@ if not api_key:
 llm = ChatOpenAI(
     openai_api_base="https://openrouter.ai/api/v1",
     openai_api_key=os.environ["OPENAI_API_KEY"],
-    model_name="nvidia/nemotron-3-ultra-550b-a55b:free",
-    temperature=0.5,
+    model_name="z-ai/glm-5.2:free",
+    temperature=0.2,
 )
 
 # 🗨️ Bucle de chat básico
 print("💬 Chatbot Mistral vía OpenRouter (escribe 'salir' para terminar)\n")
 
 Meta_promt = """
-Como matemático experto, detecta si la intención del usuario es sumar o restar, unicamente 
+Como un conocedor de futbol, explica segun la historia de futbol lo que te pregunten 
 """
 Memo = ''
 while True:

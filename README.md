@@ -41,8 +41,8 @@ Completa `secrets/.env` con las credenciales de OpenRouter y Google. El archivo
 ### Embeddings y búsqueda semántica
 
 - `Embeddings.py`: recibe una lista libre de palabras, frases o párrafos,
-  genera sus embeddings con `all-MiniLM-L6-v2` y muestra un mapa semántico en
-  dos dimensiones usando PCA o t-SNE.
+  genera sus embeddings con `text-embedding-3-small` y muestra un mapa semántico
+  en dos dimensiones usando PCA o t-SNE.
 - `SimilitudCoseno.py`: recibe tres textos y calcula sus embeddings y la
   similitud del coseno entre cada par, mostrando una matriz de resultados.
 - `TensorialBase.py`: carga `Anillos.pdf`, divide el contenido en fragmentos,

@@ -12,12 +12,13 @@ from typing import Sequence
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
-from sentence_transformers import SentenceTransformer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
+from embeddings_provider import build_embeddings
 
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+
+MODEL_NAME = "openai/text-embedding-3-small"
 EXIT_COMMANDS = {"salir", "exit", "quit", "fin"}
 
 
@@ -141,11 +142,9 @@ def main() -> None:
         print("\nIngresa al menos dos textos para generar el mapa.")
         return
 
-    print(f"\nCargando modelo de embeddings: {MODEL_NAME}")
-    model = SentenceTransformer(MODEL_NAME)
-    embeddings = np.asarray(
-        model.encode(textos, normalize_embeddings=True), dtype=np.float32
-    )
+    print(f"\nGenerando embeddings con: {MODEL_NAME}")
+    model = build_embeddings(MODEL_NAME)
+    embeddings = np.asarray(model.embed_documents(textos), dtype=np.float32)
     print(f"Embeddings generados: {len(textos)} textos × {embeddings.shape[1]} dimensiones.")
 
     print("\nMétodo de visualización:")

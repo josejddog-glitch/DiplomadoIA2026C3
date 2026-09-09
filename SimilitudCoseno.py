@@ -6,40 +6,26 @@
 #
 # FUNCIONALIDAD:
 #   - Pide tres textos al usuario.
-#   - Genera los embeddings de cada texto utilizando un modelo HuggingFace.
+#   - Genera los embeddings de cada texto usando la API de OpenRouter.
 #   - Calcula la similitud del coseno entre cada par de textos.
 #   - Muestra una matriz de similitud (3x3) con los resultados.
 #
 # CONFIGURACIÓN:
-#   - Puedes cambiar el modelo de embeddings, el dispositivo (CPU/GPU)
-#     y la normalización directamente en el bloque de parámetros.
+#   - Puedes cambiar el modelo de embeddings en el bloque de parámetros.
 #
 #
 # ======================================================================
 
-import os
 import numpy as np
-from langchain_huggingface import HuggingFaceEmbeddings
 
-# ----------------------------------------------------------------------
-# DESACTIVAR TENSORFLOW
-# ----------------------------------------------------------------------
-# Estas variables de entorno garantizan que HuggingFace use PyTorch
-# en lugar de intentar inicializar TensorFlow.
-os.environ["USE_TF"] = "0"
-os.environ["TRANSFORMERS_NO_TF"] = "1"
+from embeddings_provider import build_embeddings
 
 
 # ----------------------------------------------------------------------
 # CONFIGURACIÓN DEL MODELO DE EMBEDDINGS
 # ----------------------------------------------------------------------
-# Aquí puedes ajustar el modelo, el dispositivo y la normalización.
-# - model_name: nombre del modelo de sentence-transformers.
-# - device: "cpu" o "cuda" (si tienes GPU disponible).
-# - normalize_embeddings: normaliza los vectores (recomendado para coseno).
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-DEVICE = "cpu"
-NORMALIZE = True
+# model_name: identificador del modelo de embeddings en OpenRouter.
+MODEL_NAME = "openai/text-embedding-3-small"
 
 
 # ----------------------------------------------------------------------
@@ -90,12 +76,8 @@ def main() -> None:
     # --------------------------------------------------------------
     # INICIALIZACIÓN DEL MODELO DE EMBEDDINGS
     # --------------------------------------------------------------
-    print("\nCargando modelo de embeddings...")
-    embeddings_model = HuggingFaceEmbeddings(
-        model_name=MODEL_NAME,
-        model_kwargs={"device": DEVICE},
-        encode_kwargs={"normalize_embeddings": NORMALIZE}
-    )
+    print("\nConectando con el servicio de embeddings...")
+    embeddings_model = build_embeddings(MODEL_NAME)
 
     # --------------------------------------------------------------
     # GENERACIÓN DE EMBEDDINGS PARA CADA TEXTO
@@ -104,7 +86,7 @@ def main() -> None:
     vectores = np.array(embeddings_model.embed_documents(textos), dtype=np.float32)
 
     # vectores es una matriz de tamaño (3, n_dim)
-    # donde n_dim depende del modelo, por ejemplo 384 para all-MiniLM-L6-v2
+    # donde n_dim depende del modelo, por ejemplo 1536 para text-embedding-3-small
 
     # --------------------------------------------------------------
     # CÁLCULO DE SIMILITUD DEL COSENO ENTRE TODOS LOS PARES

@@ -8,18 +8,16 @@ from typing import Dict, List, Tuple
 import deeplake
 from dotenv import load_dotenv
 
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage
 from langchain.memory import ConversationSummaryMemory
+
+from embeddings_provider import build_embeddings
 
 # ------------------------------------------------------------
 # CONFIGURACIÓN INICIAL
 # ------------------------------------------------------------
 warnings.filterwarnings("ignore")
-os.environ["USE_TF"] = "0"
-os.environ["TRANSFORMERS_NO_TF"] = "1"
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # ------------------------------------------------------------
 # FUNCIÓN: CARGAR CONFIGURACIÓN
@@ -70,11 +68,7 @@ def retrieve_top_embedding(cfg: Dict, query: str) -> Tuple[str, float]:
         raise FileNotFoundError(f"No se encontró la base DeepLake en: {dataset_path}")
 
     # Cargar embeddings y la base local sin inicializar el cliente remoto de Activeloop.
-    embeddings = HuggingFaceEmbeddings(
-        model_name=emb_cfg["model_name"],
-        model_kwargs={"device": emb_cfg.get("device", "cpu")},
-        encode_kwargs={"normalize_embeddings": bool(emb_cfg.get("normalize_embeddings", True))}
-    )
+    embeddings = build_embeddings(emb_cfg["model_name"], emb_cfg["api_base"])
     dataset = deeplake.load(
         str(dataset_path),
         read_only=bool(dl_cfg.get("read_only", True)),

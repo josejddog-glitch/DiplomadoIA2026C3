@@ -1,4 +1,3 @@
-import os
 import json
 import warnings
 from pathlib import Path
@@ -8,12 +7,11 @@ import deeplake
 import numpy as np
 
 warnings.filterwarnings("ignore")
-os.environ["USE_TF"] = "0"
-os.environ["TRANSFORMERS_NO_TF"] = "1"
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+
+from embeddings_provider import build_embeddings
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -32,8 +30,8 @@ def load_config(path: str | Path) -> Dict:
         return json.load(f)
 
 
-def load_vectorstore(cfg: Dict) -> Tuple[object, HuggingFaceEmbeddings]:
-    """Carga la base DeepLake local y el modelo de embeddings."""
+def load_vectorstore(cfg: Dict) -> Tuple[object, OpenAIEmbeddings]:
+    """Carga la base DeepLake local y el cliente de embeddings."""
     dl_cfg = cfg["deeplake"]
     emb_cfg = cfg["embedding"]
 
@@ -48,13 +46,7 @@ def load_vectorstore(cfg: Dict) -> Tuple[object, HuggingFaceEmbeddings]:
             "Ejecuta TensorialBase.py para crearla."
         )
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name=emb_cfg["model_name"],
-        model_kwargs={"device": emb_cfg.get("device", "cpu")},
-        encode_kwargs={
-            "normalize_embeddings": bool(emb_cfg.get("normalize_embeddings", True))
-        },
-    )
+    embeddings = build_embeddings(emb_cfg["model_name"], emb_cfg["api_base"])
 
     dataset = deeplake.load(
         str(dataset_path),
@@ -74,7 +66,7 @@ def load_vectorstore(cfg: Dict) -> Tuple[object, HuggingFaceEmbeddings]:
 
 def similarity_search_with_score(
     dataset: object,
-    embeddings: HuggingFaceEmbeddings,
+    embeddings: OpenAIEmbeddings,
     query: str,
     k: int,
 ) -> list[Tuple[Document, float]]:

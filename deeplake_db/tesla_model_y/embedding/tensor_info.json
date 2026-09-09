@@ -1,0 +1,9 @@
+{
+    "embedding": {
+        "chunk_size": 1000,
+        "deployment": "text-embedding-ada-002",
+        "embedding_ctx_length": 8191,
+        "max_retries": 2,
+        "model": "openai/text-embedding-3-small"
+    }
+}
